@@ -1,0 +1,14 @@
+# Use a minimal Python image
+FROM python:3.12-slim
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy the server code into the container
+COPY server.py .
+
+# Expose the TCP port
+EXPOSE 3001
+
+# Command to run the server
+CMD ["python3", "server.py"]
