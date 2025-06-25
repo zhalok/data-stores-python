@@ -56,7 +56,6 @@ def process_command(payload):
 def handle_client(conn, addr):
     print(f"[+] New connection from {addr}")
     buffer = ""
-    conn.setblocking(False)
     try:
         while True:
         
@@ -99,6 +98,7 @@ def main():
     try:
         while True:
             conn, addr = server.accept()
+            conn.setblocking(False)
             thread = threading.Thread(target=handle_client, args=(conn, addr))
             thread.start()
     except KeyboardInterrupt:
