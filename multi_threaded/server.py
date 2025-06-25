@@ -56,25 +56,30 @@ def process_command(payload):
 def handle_client(conn, addr):
     print(f"[+] New connection from {addr}")
     buffer = ""
-
+    conn.setblocking(False)
     try:
         while True:
-            data = conn.recv(1024)
-            if not data:
-                break
+        
+            try:
+                data = conn.recv(1024)
+                if not data:
+                    break
 
-            buffer += data.decode()
+                buffer += data.decode()
 
-            while "\n" in buffer:
-                line, buffer = buffer.split("\n", 1)
-                line = line.strip()
-                if not line:
-                    continue
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
+                    line = line.strip()
+                    if not line:
+                        continue
 
-                print(f"[{addr}] Received: {line}")
-                response = process_command(line)
-                response_msg = f"{response}\n"
-                conn.sendall(response_msg.encode())
+                    print(f"[{addr}] Received: {line}")
+                    response = process_command(line)
+                    response_msg = f"{response}\n"
+                    conn.sendall(response_msg.encode())
+
+            except BlockingIOError:
+                continue
 
     except Exception as e:
         print(f"[!] Error with {addr}: {e}")
