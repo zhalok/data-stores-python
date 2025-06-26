@@ -9,7 +9,7 @@ SERVER_IP = os.getenv("SERVER_IP")
 SERVER_PORT = int(os.getenv("SERVER_PORT"))
 
 def get_command():
-    commands = ["set"]
+    commands = ["set","get","delete"]
     cmd = random.choice(commands)
     key = f"key-{uuid.uuid4()}"
     if cmd == "set":
