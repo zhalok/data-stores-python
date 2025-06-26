@@ -11,9 +11,9 @@ SERVER_PORT = int(os.getenv("SERVER_PORT"))
 def get_command():
     commands = ["set","get","delete"]
     cmd = random.choice(commands)
-    key = f"key-{uuid.uuid4()}"
+    key = f"key-{random.randint(1,100000)}"
     if cmd == "set":
-        value = f"value-{random.randint(1,10)}"
+        value = f"value-{random.randint(1,100000)}"
         command_str = f"{cmd} {key} {value}\n"
     else:
         command_str = f"{cmd} {key}\n"
