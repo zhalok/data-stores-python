@@ -1,4 +1,3 @@
-version: "3.8"
 
 services:
   datastore_single_threaded:
@@ -18,6 +17,16 @@ services:
       dockerfile: dockerfile
     ports:
       - "8001:3001"
+    networks:
+      - appnet
+
+  datastore_multithreaded_fixed_worker:
+    container_name: datastore_multithreaded_fixed_worker
+    build:
+      context: ./multi_threaded_fixed_worker
+      dockerfile: dockerfile
+    ports:
+      - "8003:3003"
     networks:
       - appnet
 
