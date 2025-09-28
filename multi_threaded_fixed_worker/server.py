@@ -1,5 +1,8 @@
 import socket
 import threading
+from concurrent.futures import ThreadPoolExecutor
+import signal
+import sys
 
 # Global in-memory store + lock
 store = {}
@@ -58,7 +61,6 @@ def handle_client(conn, addr):
     buffer = ""
     try:
         while True:
-        
             data = conn.recv(1024)
             if not data:
                 break
@@ -76,8 +78,6 @@ def handle_client(conn, addr):
                 response_msg = f"{response}\n"
                 conn.sendall(response_msg.encode())
 
-
-
     except Exception as e:
         print(f"[!] Error with {addr}: {e}")
     finally:
@@ -86,28 +86,58 @@ def handle_client(conn, addr):
 
 def main():
     host = '0.0.0.0'
-    port = 3001
+    port = 3003
+    max_workers = 3  # Adjust based on your needs
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind((host, port))
     server.listen(5)
-    # server.setblocking(False)
-    print(f"[*] Listening on {host}:{port}")
+    print(f"[*] Listening on {host}:{port} with {max_workers} worker threads")
+
+    # Create thread pool
+    executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="ClientHandler")
+    
+    def signal_handler(signum, frame):
+        print("\n[!] Shutting down server...")
+        server.close()
+        executor.shutdown(wait=True, cancel_futures=True)
+        print("[!] Server shut down complete")
+        sys.exit(0)
+
+    # Handle graceful shutdown
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
 
     try:
         while True:
-
-            conn, addr = server.accept()
-            # conn.setblocking(False)
-            conn.send("connection recieved!!!\ns".encode())
-            thread = threading.Thread(target=handle_client, args=(conn, addr))
-            thread.start()
-
-
+            try:
+                conn, addr = server.accept()
+                conn.send("connection received!!!\n".encode())
+                
+                # Submit client handling to thread pool
+                future = executor.submit(handle_client, conn, addr)
+                
+                # Optional: You can add a callback to handle any exceptions
+                def handle_future_exception(fut):
+                    try:
+                        fut.result()  # This will raise any exception that occurred
+                    except Exception as e:
+                        print(f"[!] Exception in client handler: {e}")
+                
+                future.add_done_callback(handle_future_exception)
+                
+            except OSError:
+                # Socket was closed, likely due to shutdown
+                break
+                
     except KeyboardInterrupt:
         print("\n[!] Server shutting down")
     finally:
         server.close()
+        executor.shutdown(wait=True)
+        print("[!] All threads finished")
 
 if __name__ == "__main__":
     main()

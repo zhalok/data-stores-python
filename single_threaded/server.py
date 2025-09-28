@@ -5,7 +5,6 @@ import time
 store = {}
 
 def process_command(payload):
-    print(f"payload: {payload}")
     commands = payload.strip().split()
 
     if not commands:
@@ -49,12 +48,13 @@ def main():
     port = 3000
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind((host, port))
-    server.listen()
     server.setblocking(False)
 
+    server.bind((host, port))
     print(f"[*] Listening on {host}:{port}")
+
+    server.listen()
+
 
     clients = {}
     buffers = {}
@@ -64,6 +64,7 @@ def main():
             # Accept new connections (non-blocking)
             try:
                 conn, addr = server.accept()
+                conn.send("connection recieved!!!\n".encode())
                 conn.setblocking(False)
                 clients[conn] = addr
                 buffers[conn] = ""
@@ -86,7 +87,7 @@ def main():
 
                     # Process complete lines
                     while "\n" in buffers[conn]:
-                        line, buffers[conn] = buffers[conn].split("\n", 1)
+                        line, buffers[conn] = buffers[conn].split("\n",1)
                         line = line.strip()
                         if not line:
                             continue
@@ -95,6 +96,9 @@ def main():
                         response = process_command(line)
                         response_msg = f"{response}\n"
                         conn.sendall(response_msg.encode())
+                        print(f"response sent to connection {clients[conn]}")
+
+                    
 
                 except BlockingIOError:
                     # No data to read right now
