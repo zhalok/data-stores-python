@@ -53,7 +53,7 @@ def main():
     server.bind((host, port))
     print(f"[*] Listening on {host}:{port}")
 
-    server.listen()
+    server.listen(1000)
 
 
     clients = {}
@@ -63,7 +63,7 @@ def main():
         while True:
             # Accept new connections (non-blocking)
             try:
-                conn, addr = server.accept(1000)
+                conn, addr = server.accept()
                 conn.send("connection recieved!!!\n".encode())
                 conn.setblocking(False)
                 clients[conn] = addr
