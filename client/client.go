@@ -7,7 +7,17 @@ import (
 	"math/rand"
 	"net"
 	"sync"
+	"time"
 )
+
+type Request struct {
+	id   int
+	addr string
+}
+
+var totalRequestCompleted = 0
+
+var mu sync.Mutex
 
 func getCommand() string {
 	commands := []string{"set", "get", "delete"}
@@ -26,9 +36,7 @@ func getCommand() string {
 	return commandStr
 }
 
-func worker(id int, wg *sync.WaitGroup, addr string) {
-	defer wg.Done()
-
+func processor(id int, requestId int, addr string) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		fmt.Printf("Worker %d: failed to connect: %v\n", id, err)
@@ -36,48 +44,68 @@ func worker(id int, wg *sync.WaitGroup, addr string) {
 	}
 	defer conn.Close()
 
+	fmt.Printf("connection established with address %s\n", addr)
+
 	writer := bufio.NewWriter(conn)
 
-	totalCommandsSent := 0
+	commandsWriten := 0
+	for i := 0; i < 10000; i++ {
+		command := getCommand()
+		writer.WriteString(command)
+		commandsWriten += 1
 
-	for batch := 0; batch < 100; batch++ {
-		for i := 0; i < 100; i++ {
-			command := getCommand()
-			fmt.Printf("command %s", command)
-			_, err := writer.WriteString(command)
+		if i%100 == 0 {
+			err = writer.Flush()
 			if err != nil {
-				panic(err)
+				fmt.Printf("there was an error flushing the writes to the connection %v\n", err)
+				err = conn.Close()
+				if err != nil {
+					fmt.Printf("there was a problem closing the connection %v\n", err)
+					return
+				}
+				fmt.Println("connection closed")
+				return
 			}
-
-			totalCommandsSent += 1
-
+			fmt.Printf("sent %d commands\n",commandsWriten)
+			time.Sleep(10 * time.Second)
 		}
 
-		err = writer.Flush()
-		if err != nil {
-			fmt.Printf("Worker %d: flush error: %v\n", id, err)
-			return
-		}
+	}
+	fmt.Printf("connection %d completed", requestId)
+	conn.Close()
+}
 
-		fmt.Printf("Worker %d: finished sending %d commands\n", id, totalCommandsSent)
+func worker(id int, wg *sync.WaitGroup, inputChan chan Request) {
+	defer wg.Done()
+	for req := range inputChan {
+		processor(id, req.id, req.addr)
 	}
 
 }
 
 func main() {
-	n := 10000               // number of goroutines
+	numWorker := 100 // number of goroutines
+	numConnections := 1000
+	queueSize := 1
+
 	addr := "127.0.0.1:8004" // TCP server address
-
+	addr = "192.168.0.108:8000"
+	inputChan := make(chan Request, queueSize)
 	var wg sync.WaitGroup
-	for it := 0; it < 1000; it++ {
-		for i := 1; i <= n; i++ {
-			wg.Add(1)
-			go worker(i, &wg, addr)
-		}
-
-		wg.Wait()
-		fmt.Println("All workers finished")
+	for i := 0; i < numWorker; i++ {
+		wg.Add(1)
+		go worker(i+1, &wg, inputChan)
 	}
-	fmt.Println("all batch completed")
+
+	for connection := 0; connection < numConnections; connection++ {
+		req := Request{
+			id:   connection + 1,
+			addr: addr,
+		}
+		inputChan <- req
+	}
+
+	close(inputChan)
+	wg.Wait()
 
 }
