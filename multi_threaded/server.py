@@ -74,7 +74,10 @@ def handle_client(conn, addr):
                 print(f"[{addr}] Received: {line}")
                 response = process_command(line)
                 response_msg = f"{response}\n"
-                conn.sendall(response_msg.encode())
+                try:
+                    conn.sendall(response_msg.encode())
+                except:
+                    print("faced error on response writing in the connection")
 
 
 

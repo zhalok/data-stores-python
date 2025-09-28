@@ -95,8 +95,11 @@ def main():
                         print(f"[{clients[conn]}] Received: {line}")
                         response = process_command(line)
                         response_msg = f"{response}\n"
-                        conn.sendall(response_msg.encode())
-                        print(f"response sent to connection {clients[conn]}")
+                        try:
+                            conn.sendall(response_msg.encode())
+                            print(f"response sent to connection {clients[conn]}")
+                        except:
+                            print("faced error on response writing in the connection")
 
                     
 
