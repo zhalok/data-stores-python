@@ -63,7 +63,7 @@ def main():
         while True:
             # Accept new connections (non-blocking)
             try:
-                conn, addr = server.accept()
+                conn, addr = server.accept(1000)
                 conn.send("connection recieved!!!\n".encode())
                 conn.setblocking(False)
                 clients[conn] = addr
