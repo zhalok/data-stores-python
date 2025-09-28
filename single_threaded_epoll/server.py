@@ -38,7 +38,6 @@ def main():
     port = 3000
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.setblocking(False)
     server.bind((host, port))
     server.listen(1000)
     print(f"[*] Listening on {host}:{port}")
@@ -56,7 +55,6 @@ def main():
             for fd, event in events:
                 if fd == server.fileno():
                     conn, addr = server.accept()
-                    conn.setblocking(False)
                     epoll.register(conn.fileno(), select.EPOLLIN | select.EPOLLRDHUP | select.EPOLLHUP)
                     clients[conn.fileno()] = conn
                     buffers[conn.fileno()] = ""
