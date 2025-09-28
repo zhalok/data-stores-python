@@ -69,6 +69,8 @@ def main():
                         del clients[fd]
                         del buffers[fd]
                     else:
+                        if fd not in buffers:
+                            buffers[fd] = ""
                         buffers[fd] += data.decode()
                         while "\n" in buffers[fd]:
                             line, buffers[fd] = buffers[fd].split("\n", 1)
