@@ -87,7 +87,7 @@ def main():
 
                     # Process complete lines
                     while "\n" in buffers[conn]:
-                        line, buffers[conn] = buffers[conn].split("\n", 1)
+                        line, buffers[conn] = buffers[conn].split("\n",1)
                         line = line.strip()
                         if not line:
                             continue
@@ -96,6 +96,9 @@ def main():
                         response = process_command(line)
                         response_msg = f"{response}\n"
                         conn.sendall(response_msg.encode())
+                        print(f"response sent to connection {clients[conn]}")
+
+                    
 
                 except BlockingIOError:
                     # No data to read right now

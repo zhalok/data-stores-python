@@ -10,6 +10,16 @@ services:
     networks:
       - appnet
 
+  datastore_single_threaded_epoll:
+    container_name: datastore_single_threaded_epoll
+    build:
+      context: ./single_threaded_epoll
+      dockerfile: dockerfile
+    ports:
+      - "8004:3000"
+    networks:
+      - appnet
+
   datastore_multithreaded:
     container_name: datastore_multithreaded
     build:
@@ -55,53 +65,53 @@ services:
     networks:
       - appnet
 
-  locust1:
-    container_name: locust1
-    image: locustio/locust:latest
-    volumes:
-      - ./:/app:ro
-    working_dir: /app
-    ports:
-      - "8089:8089"
-    command: >
-      -f ./locust/tcp_testing.py
-    environment:
-      - SERVER_PORT=3000
-      - SERVER_IP=datastore_single_threaded
-    networks:
-      - appnet
+  # locust1:
+  #   container_name: locust1
+  #   image: locustio/locust:latest
+  #   volumes:
+  #     - ./:/app:ro
+  #   working_dir: /app
+  #   ports:
+  #     - "8089:8089"
+  #   command: >
+  #     -f ./locust/tcp_testing.py
+  #   environment:
+  #     - SERVER_PORT=3000
+  #     - SERVER_IP=datastore_single_threaded
+  #   networks:
+  #     - appnet
 
-  locust2:
-    container_name: locust2
-    image: locustio/locust:latest
-    volumes:
-      - ./:/app:ro
-    working_dir: /app
-    ports:
-      - "8090:8089"
-    command: >
-      -f ./locust/tcp_testing.py
-    environment:
-      - SERVER_PORT=3001
-      - SERVER_IP=datastore_multithreaded
-    networks:
-      - appnet
+  # locust2:
+  #   container_name: locust2
+  #   image: locustio/locust:latest
+  #   volumes:
+  #     - ./:/app:ro
+  #   working_dir: /app
+  #   ports:
+  #     - "8090:8089"
+  #   command: >
+  #     -f ./locust/tcp_testing.py
+  #   environment:
+  #     - SERVER_PORT=3001
+  #     - SERVER_IP=datastore_multithreaded
+  #   networks:
+  #     - appnet
 
-  locust3:
-    container_name: locust3
-    image: locustio/locust:latest
-    volumes:
-      - ./:/app:ro
-    working_dir: /app
-    ports:
-      - "8091:8089"
-    command: >
-      -f ./locust/tcp_testing.py
-    environment:
-      - SERVER_PORT=3002
-      - SERVER_IP=datastore_single_threaded_cluster
-    networks:
-      - appnet
+  # locust3:
+  #   container_name: locust3
+  #   image: locustio/locust:latest
+  #   volumes:
+  #     - ./:/app:ro
+  #   working_dir: /app
+  #   ports:
+  #     - "8091:8089"
+  #   command: >
+  #     -f ./locust/tcp_testing.py
+  #   environment:
+  #     - SERVER_PORT=3002
+  #     - SERVER_IP=datastore_single_threaded_cluster
+  #   networks:
+  #     - appnet
 
   prometheus:
     image: prom/prometheus:latest

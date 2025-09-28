@@ -87,7 +87,8 @@ def handle_client(conn, addr):
 def main():
     host = '0.0.0.0'
     port = 3003
-    max_workers = 10  # Adjust based on your needs
+    max_workers = 3  # Adjust based on your needs
+
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -108,37 +109,36 @@ def main():
     # Handle graceful shutdown
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
-    while True:
-        ""
 
-    # try:
-    #     while True:
-    #         try:
-    #             conn, addr = server.accept()
-    #             conn.send("connection received!!!\n".encode())
+
+    try:
+        while True:
+            try:
+                conn, addr = server.accept()
+                conn.send("connection received!!!\n".encode())
                 
-    #             # Submit client handling to thread pool
-    #             future = executor.submit(handle_client, conn, addr)
+                # Submit client handling to thread pool
+                future = executor.submit(handle_client, conn, addr)
                 
-    #             # Optional: You can add a callback to handle any exceptions
-    #             def handle_future_exception(fut):
-    #                 try:
-    #                     fut.result()  # This will raise any exception that occurred
-    #                 except Exception as e:
-    #                     print(f"[!] Exception in client handler: {e}")
+                # Optional: You can add a callback to handle any exceptions
+                def handle_future_exception(fut):
+                    try:
+                        fut.result()  # This will raise any exception that occurred
+                    except Exception as e:
+                        print(f"[!] Exception in client handler: {e}")
                 
-    #             future.add_done_callback(handle_future_exception)
+                future.add_done_callback(handle_future_exception)
                 
-    #         except OSError:
-    #             # Socket was closed, likely due to shutdown
-    #             break
+            except OSError:
+                # Socket was closed, likely due to shutdown
+                break
                 
-    # except KeyboardInterrupt:
-    #     print("\n[!] Server shutting down")
-    # finally:
-    #     server.close()
-    #     executor.shutdown(wait=True)
-    #     print("[!] All threads finished")
+    except KeyboardInterrupt:
+        print("\n[!] Server shutting down")
+    finally:
+        server.close()
+        executor.shutdown(wait=True)
+        print("[!] All threads finished")
 
 if __name__ == "__main__":
     main()
