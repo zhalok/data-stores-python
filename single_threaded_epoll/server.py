@@ -76,12 +76,12 @@ def main():
                             if not line:
                                 continue
                             print(f"[{conn}] Received: {line}")
-                            # response = process_command(line)
-                            # try:
-                            #     conn.sendall((response + "\n").encode())
-                            #     print(f"Response sent to {conn}")
-                            # except:
-                            #     print("error sending response")
+                            response = process_command(line)
+                            try:
+                                conn.sendall((response + "\n").encode())
+                                print(f"Response sent to {conn}")
+                            except:
+                                print("error sending response")
 
     except KeyboardInterrupt:
         print("\n[!] Server shutting down")
