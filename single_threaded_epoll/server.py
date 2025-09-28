@@ -45,6 +45,7 @@ def main():
 
     clients = {}
     buffers = {}
+    addresses = {}
 
     epoll = select.epoll()
     epoll.register(server.fileno(), select.EPOLLIN)
@@ -56,34 +57,58 @@ def main():
                 if fd == server.fileno():
                     conn, addr = server.accept()
                     conn.setblocking(False)
-                    epoll.register(conn.fileno(), select.EPOLLIN)
+                    epoll.register(conn.fileno(), select.EPOLLIN | select.EPOLLRDHUP | select.EPOLLHUP)
                     clients[conn.fileno()] = conn
                     buffers[conn.fileno()] = ""
+                    addresses[conn.fileno()] = addr
                     print(f"Accepted connection from {addr}")
-                elif event & select.EPOLLIN:
+                elif event == select.EPOLLRDHUP or event == select.EPOLLHUP:
+                    epoll.unregister(fd)
+                    addr = addresses[fd]
+                    del clients[fd]
+                    del buffers[fd]
+                    print(f"closing connection from address {addr}")
+                elif event == select.EPOLLIN:
                     conn = clients[fd]
                     data = conn.recv(1024)
-                    if not data:
-                        epoll.unregister(fd)
-                        conn.close()
-                        del clients[fd]
-                        del buffers[fd]
-                    else:
-                        if fd not in buffers:
-                            buffers[fd] = ""
-                        buffers[fd] += data.decode()
-                        while "\n" in buffers[fd]:
-                            line, buffers[fd] = buffers[fd].split("\n", 1)
-                            line = line.strip()
-                            if not line:
-                                continue
-                            print(f"[{conn}] Received: {line}")
-                            response = process_command(line)
-                            try:
-                                conn.sendall((response + "\n").encode())
-                                print(f"Response sent to {conn}")
-                            except:
-                                print("error sending response")
+                    buffers[fd] += data.decode()
+                    while "\n" in buffers[fd]:
+                        line, buffers[fd] = buffers[fd].split("\n", 1)
+                        line = line.strip()
+                        if not line:
+                            continue
+                        print(f"[{conn}] Received: {line}")
+                        response = process_command(line)
+                        try:
+                            conn.sendall((response + "\n").encode())
+                            print(f"Response sent to {conn}")
+                        except:
+                            print("error sending response")
+                    # try:
+                    #     data = conn.recv(1024)
+                    # except ConnectionResetError:
+                    #     data = None
+                    # if not data:
+                    #     epoll.unregister(fd)
+                    #     conn.close()
+                    #     del clients[fd]
+                    #     del buffers[fd]
+                    # else:
+                    #     if fd not in buffers:
+                    #         buffers[fd] = ""
+                    #     buffers[fd] += data.decode()
+                    #     while "\n" in buffers[fd]:
+                    #         line, buffers[fd] = buffers[fd].split("\n", 1)
+                    #         line = line.strip()
+                    #         if not line:
+                    #             continue
+                    #         print(f"[{conn}] Received: {line}")
+                    #         response = process_command(line)
+                    #         try:
+                    #             conn.sendall((response + "\n").encode())
+                    #             print(f"Response sent to {conn}")
+                    #         except:
+                    #             print("error sending response")
 
     except KeyboardInterrupt:
         print("\n[!] Server shutting down")
