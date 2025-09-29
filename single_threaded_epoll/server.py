@@ -82,31 +82,6 @@ def main():
                             print(f"Response sent to {conn}")
                         except:
                             print("error sending response")
-                    # try:
-                    #     data = conn.recv(1024)
-                    # except ConnectionResetError:
-                    #     data = None
-                    # if not data:
-                    #     epoll.unregister(fd)
-                    #     conn.close()
-                    #     del clients[fd]
-                    #     del buffers[fd]
-                    # else:
-                    #     if fd not in buffers:
-                    #         buffers[fd] = ""
-                    #     buffers[fd] += data.decode()
-                    #     while "\n" in buffers[fd]:
-                    #         line, buffers[fd] = buffers[fd].split("\n", 1)
-                    #         line = line.strip()
-                    #         if not line:
-                    #             continue
-                    #         print(f"[{conn}] Received: {line}")
-                    #         response = process_command(line)
-                    #         try:
-                    #             conn.sendall((response + "\n").encode())
-                    #             print(f"Response sent to {conn}")
-                    #         except:
-                    #             print("error sending response")
 
     except KeyboardInterrupt:
         print("\n[!] Server shutting down")
