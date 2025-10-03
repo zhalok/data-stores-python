@@ -54,7 +54,7 @@ func processor(id int, requestId int, addr string) {
 		writer.WriteString(command)
 		commandsWriten += 1
 
-		if i%100 == 0 {
+		if (i+1)%100 == 0 {
 			err = writer.Flush()
 			if err != nil {
 				fmt.Printf("there was an error flushing the writes to the connection %v\n", err)
@@ -84,12 +84,12 @@ func worker(id int, wg *sync.WaitGroup, inputChan chan Request) {
 }
 
 func main() {
-	numWorker := 100 // number of goroutines
-	numConnections := 1000
+	numWorker := 4000 // number of goroutines
+	numConnections := 100000
 	queueSize := 1
 
-	addr := "127.0.0.1:8004" // TCP server address
-	addr = "192.168.0.108:8000"
+	addr := "localhost:8001" // TCP server address
+	// addr = "192.168.0.108:8001"
 	inputChan := make(chan Request, queueSize)
 	var wg sync.WaitGroup
 	for i := 0; i < numWorker; i++ {

@@ -102,7 +102,7 @@ def main():
 
             conn, addr = server.accept()
             # conn.setblocking(False)
-            conn.send("connection recieved!!!\ns".encode())
+            conn.sendall("connection recieved!!!\n".encode())
             thread = threading.Thread(target=handle_client, args=(conn, addr))
             thread.start()
 

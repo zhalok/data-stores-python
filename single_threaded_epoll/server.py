@@ -51,7 +51,7 @@ def main():
 
     try:
         while True:
-            events = epoll.poll(1)
+            events = epoll.poll(-1)
             for fd, event in events:
                 if fd == server.fileno():
                     conn, addr = server.accept()

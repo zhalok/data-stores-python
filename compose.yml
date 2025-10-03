@@ -30,26 +30,6 @@ services:
     networks:
       - appnet
 
-  datastore_multithreaded_fixed_worker:
-    container_name: datastore_multithreaded_fixed_worker
-    build:
-      context: ./multi_threaded_fixed_worker
-      dockerfile: dockerfile
-    ports:
-      - "8003:3003"
-    networks:
-      - appnet
-
-  datastore_single_threaded_cluster:
-    container_name: datastore_single_threaded_cluster
-    build:
-      context: ./clustered_single_threaded
-      dockerfile: dockerfile
-    ports:
-      - "8002:3002"
-    networks:
-      - appnet
-
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     platform: linux/arm64/v8
@@ -64,77 +44,6 @@ services:
     restart: unless-stopped
     networks:
       - appnet
-
-  # locust1:
-  #   container_name: locust1
-  #   image: locustio/locust:latest
-  #   volumes:
-  #     - ./:/app:ro
-  #   working_dir: /app
-  #   ports:
-  #     - "8089:8089"
-  #   command: >
-  #     -f ./locust/tcp_testing.py
-  #   environment:
-  #     - SERVER_PORT=3000
-  #     - SERVER_IP=datastore_single_threaded
-  #   networks:
-  #     - appnet
-
-  # locust2:
-  #   container_name: locust2
-  #   image: locustio/locust:latest
-  #   volumes:
-  #     - ./:/app:ro
-  #   working_dir: /app
-  #   ports:
-  #     - "8090:8089"
-  #   command: >
-  #     -f ./locust/tcp_testing.py
-  #   environment:
-  #     - SERVER_PORT=3001
-  #     - SERVER_IP=datastore_multithreaded
-  #   networks:
-  #     - appnet
-
-  # locust3:
-  #   container_name: locust3
-  #   image: locustio/locust:latest
-  #   volumes:
-  #     - ./:/app:ro
-  #   working_dir: /app
-  #   ports:
-  #     - "8091:8089"
-  #   command: >
-  #     -f ./locust/tcp_testing.py
-  #   environment:
-  #     - SERVER_PORT=3002
-  #     - SERVER_IP=datastore_single_threaded_cluster
-  #   networks:
-  #     - appnet
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - appnet
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-storage:/var/lib/grafana
-    networks:
-      - appnet
-
-volumes:
-  grafana-storage:
 
 networks:
   appnet:
