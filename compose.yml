@@ -69,6 +69,8 @@ services:
       - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/dashboards:/var/lib/grafana/dashboards:ro
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
