@@ -88,8 +88,7 @@ func main() {
 	numConnections := 100000
 	queueSize := 1
 
-	addr := "localhost:8004" // TCP server address
-	// addr = "192.168.0.108:8001"
+	addr := "localhost:8003" // TCP server address
 	inputChan := make(chan Request, queueSize)
 	var wg sync.WaitGroup
 	for i := 0; i < numWorker; i++ {
