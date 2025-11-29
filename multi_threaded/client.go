@@ -3,6 +3,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"math/rand"
 	"net"
@@ -18,6 +19,8 @@ type Request struct {
 var totalRequestCompleted = 0
 
 var mu sync.Mutex
+
+var commandsPerConnection = 1000
 
 func getCommand() string {
 	commands := []string{"set", "get", "delete"}
@@ -49,7 +52,7 @@ func processor(id int, requestId int, addr string) {
 	writer := bufio.NewWriter(conn)
 
 	commandsWriten := 0
-	for i := 0; i < 10000; i++ {
+	for i := 0; i < commandsPerConnection; i++ {
 		command := getCommand()
 		writer.WriteString(command)
 		commandsWriten += 1
@@ -84,23 +87,29 @@ func worker(id int, wg *sync.WaitGroup, inputChan chan Request) {
 }
 
 func main() {
-	numWorker := 4000 // number of goroutines
-	numConnections := 100000
-	queueSize := 1
+	numWorkers := flag.Int("workers", 10, "number of worker goroutines")
+	numConnections := flag.Int("connections", 10, "number of connections to create")
+	commands := flag.Int("commands", 10, "number of connections to create")
+	queueSize := flag.Int("queue-size", 10, "size of the request queue")
+	addr := flag.String("addr", "localhost:8001", "TCP server address")
 
-	addr := "localhost:8001" // TCP server address
-	// addr = "192.168.0.108:8001"
-	inputChan := make(chan Request, queueSize)
+	flag.Parse()
+
+	commandsPerConnection = *commands
+
+	fmt.Printf("Number of workers %d\n",*numWorkers)
+
+	inputChan := make(chan Request, *queueSize)
 	var wg sync.WaitGroup
-	for i := 0; i < numWorker; i++ {
+	for i := 0; i < *numWorkers; i++ {
 		wg.Add(1)
 		go worker(i+1, &wg, inputChan)
 	}
 
-	for connection := 0; connection < numConnections; connection++ {
+	for connection := 0; connection < *numConnections; connection++ {
 		req := Request{
 			id:   connection + 1,
-			addr: addr,
+			addr: *addr,
 		}
 		inputChan <- req
 	}
