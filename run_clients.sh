@@ -8,7 +8,7 @@ WORKERS=${1:-10}
 CONNECTIONS=${2:-10}
 COMMANDS=${3:-100000}
 QUEUE_SIZE=${4:-10}
-SLEEP=${5:-5}
+SLEEP=${5:-15}
 
 # Log directory
 LOG_DIR="./logs"
