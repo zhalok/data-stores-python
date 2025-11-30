@@ -22,6 +22,8 @@ var mu sync.Mutex
 
 var commandsPerConnection = 1000
 
+var sleepDuration time.Duration
+
 func getCommand() string {
 	commands := []string{"set", "get", "delete"}
 
@@ -70,7 +72,7 @@ func processor(id int, requestId int, addr string) {
 				return
 			}
 			fmt.Printf("sent %d commands\n",commandsWriten)
-			time.Sleep(10 * time.Second)
+			time.Sleep(sleepDuration)
 		}
 
 	}
@@ -92,10 +94,12 @@ func main() {
 	commands := flag.Int("commands", 10, "number of connections to create")
 	queueSize := flag.Int("queue-size", 10, "size of the request queue")
 	addr := flag.String("addr", "localhost:8001", "TCP server address")
+	sleepSeconds := flag.Int("sleep", 10, "sleep duration in seconds between command batches")
 
 	flag.Parse()
 
 	commandsPerConnection = *commands
+	sleepDuration = time.Duration(*sleepSeconds) * time.Second
 
 	fmt.Printf("Number of workers %d\n",*numWorkers)
 
