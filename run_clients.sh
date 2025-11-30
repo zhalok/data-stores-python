@@ -6,9 +6,9 @@
 # Default values
 WORKERS=${1:-10}
 CONNECTIONS=${2:-10}
-COMMANDS=${3:-1000}
+COMMANDS=${3:-100000}
 QUEUE_SIZE=${4:-10}
-SLEEP=${5:-10}
+SLEEP=${5:-5}
 
 # Log directory
 LOG_DIR="./logs"
