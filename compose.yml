@@ -30,20 +30,20 @@ services:
     networks:
       - appnet
 
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    platform: linux/arm64/v8
-    container_name: cadvisor
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
-    restart: unless-stopped
-    networks:
-      - appnet
+  # cadvisor:
+  #   image: gcr.io/cadvisor/cadvisor:latest
+  #   platform: linux/arm64/v8
+  #   container_name: cadvisor
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:ro
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro
+  #   restart: unless-stopped
+  #   networks:
+  #     - appnet
 
   prometheus:
     image: prom/prometheus:latest
@@ -80,10 +80,38 @@ services:
       - appnet
     depends_on:
       - prometheus
+  netdata:
+      image: netdata/netdata
+      container_name: netdata
+      # pid: host             # Critical: allows Netdata to see processes on the host
+      # network_mode: host    # Recommended: simplest way to access host networking stack
+      ports:
+        - "19999:19999"
+      restart: unless-stopped
+      cap_add:
+        - SYS_PTRACE        # Needed for capturing process metrics
+        - SYS_ADMIN         # Needed for some container network monitoring
+      security_opt:
+        - apparmor:unconfined
+      volumes:
+        - netdataconfig:/etc/netdata
+        - netdatalib:/var/lib/netdata
+        - netdatacache:/var/cache/netdata
+        - /etc/passwd:/host/etc/passwd:ro
+        - /etc/group:/host/etc/group:ro
+        - /proc:/host/proc:ro
+        - /sys:/host/sys:ro
+        - /etc/os-release:/host/etc/os-release:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro # Vital: Allows detection of other containers
+      networks:
+        - appnet
 
 volumes:
   prometheus-data:
   grafana-data:
+  netdataconfig:
+  netdatalib:
+  netdatacache:
 
 networks:
   appnet:
