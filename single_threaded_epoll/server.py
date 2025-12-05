@@ -1,12 +1,10 @@
 import socket
 import select
-import asyncio
 
 # Global in-memory store
 store = {}
 
 def process_command(payload):
-    asyncio.sleep(10)
     commands = payload.strip().split()
     if not commands:
         return "invalid commands"
@@ -37,20 +35,19 @@ def process_command(payload):
 
 def handle_connection(conn, buffers, fd):
     data = conn.recv(1024)
-    asyncio.sleep(10)
-    # buffers[fd] += data.decode()
-    # while "\n" in buffers[fd]:
-    #     line, buffers[fd] = buffers[fd].split("\n", 1)
-    #     line = line.strip()
-    #     if not line:
-    #         continue
-    #     print(f"[{conn}] Received: {line}")
-    #     response = process_command(line)
-    #     try:
-    #         conn.sendall((response + "\n").encode())
-    #         print(f"Response sent to {conn}")
-    #     except:
-    #         print("error sending response")
+    buffers[fd] += data.decode()
+    while "\n" in buffers[fd]:
+        line, buffers[fd] = buffers[fd].split("\n", 1)
+        line = line.strip()
+        if not line:
+            continue
+        print(f"[{conn}] Received: {line}")
+        response = process_command(line)
+        try:
+            conn.sendall((response + "\n").encode())
+            print(f"Response sent to {conn}")
+        except:
+            print("error sending response")
     
 def handle_event(fd, event, server, epoll, clients, buffers, addresses):
     if fd == server.fileno():

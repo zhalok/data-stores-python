@@ -1,6 +1,5 @@
 import socket
 import time
-import asyncio
 
 # Global in-memory store
 store = {}
@@ -13,25 +12,23 @@ def handle_connection(conn, buffers, to_remove, clients):
             to_remove.append(conn)
             return
         
-        asyncio.sleep(10)
+        buffers[conn] += data.decode()
 
-        # buffers[conn] += data.decode()
+        # Process complete lines
+        while "\n" in buffers[conn]:
+            line, buffers[conn] = buffers[conn].split("\n",1)
+            line = line.strip()
+            if not line:
+                continue
 
-        # # Process complete lines
-        # while "\n" in buffers[conn]:
-        #     line, buffers[conn] = buffers[conn].split("\n",1)
-        #     line = line.strip()
-        #     if not line:
-        #         continue
-
-        #     print(f"[{clients[conn]}] Received: {line}")
-        #     response = process_command(line)
-        #     response_msg = f"{response}\n"
-        #     try:
-        #         conn.sendall(response_msg.encode())
-        #         print(f"response sent to connection {clients[conn]}")
-        #     except:
-        #         print("faced error on response writing in the connection")
+            print(f"[{clients[conn]}] Received: {line}")
+            response = process_command(line)
+            response_msg = f"{response}\n"
+            try:
+                conn.sendall(response_msg.encode())
+                print(f"response sent to connection {clients[conn]}")
+            except:
+                print("faced error on response writing in the connection")
 
         
 
@@ -43,8 +40,6 @@ def handle_connection(conn, buffers, to_remove, clients):
         to_remove.append(conn)
 
 def process_command(payload):
-
-    asyncio.sleep(10)
 
     commands = payload.strip().split()
 
