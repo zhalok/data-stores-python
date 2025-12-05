@@ -1,10 +1,51 @@
 import socket
 import time
+import asyncio
 
 # Global in-memory store
 store = {}
 
+def handle_connection(conn, buffers, to_remove, clients):
+    try:
+        data = conn.recv(1024)
+        if not data:
+            # Connection closed
+            to_remove.append(conn)
+            return
+        
+        asyncio.sleep(10)
+
+        # buffers[conn] += data.decode()
+
+        # # Process complete lines
+        # while "\n" in buffers[conn]:
+        #     line, buffers[conn] = buffers[conn].split("\n",1)
+        #     line = line.strip()
+        #     if not line:
+        #         continue
+
+        #     print(f"[{clients[conn]}] Received: {line}")
+        #     response = process_command(line)
+        #     response_msg = f"{response}\n"
+        #     try:
+        #         conn.sendall(response_msg.encode())
+        #         print(f"response sent to connection {clients[conn]}")
+        #     except:
+        #         print("faced error on response writing in the connection")
+
+        
+
+    except BlockingIOError:
+        # No data to read right now
+        return
+    except Exception as e:
+        print(f"[!] Error with {clients[conn]}: {e}")
+        to_remove.append(conn)
+
 def process_command(payload):
+
+    asyncio.sleep(10)
+
     commands = payload.strip().split()
 
     if not commands:
@@ -76,39 +117,7 @@ def main():
 
             # Iterate through all clients
             for conn in list(clients.keys()):
-                try:
-                    data = conn.recv(1024)
-                    if not data:
-                        # Connection closed
-                        to_remove.append(conn)
-                        continue
-
-                    buffers[conn] += data.decode()
-
-                    # Process complete lines
-                    while "\n" in buffers[conn]:
-                        line, buffers[conn] = buffers[conn].split("\n",1)
-                        line = line.strip()
-                        if not line:
-                            continue
-
-                        print(f"[{clients[conn]}] Received: {line}")
-                        response = process_command(line)
-                        response_msg = f"{response}\n"
-                        try:
-                            conn.sendall(response_msg.encode())
-                            print(f"response sent to connection {clients[conn]}")
-                        except:
-                            print("faced error on response writing in the connection")
-
-                    
-
-                except BlockingIOError:
-                    # No data to read right now
-                    pass
-                except Exception as e:
-                    print(f"[!] Error with {clients[conn]}: {e}")
-                    to_remove.append(conn)
+                handle_connection(conn=conn, buffers=buffers, to_remove=to_remove)
 
             # Clean up closed connections
             for conn in to_remove:

@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 0,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -102,7 +102,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "adhocFilters": [],
@@ -115,12 +115,25 @@
           "fromExploreMetrics": true,
           "instant": true,
           "interval": "",
-          "legendFormat": "sum(rate)",
+          "legendFormat": "epoll",
           "range": true,
           "refId": "container_cpu_usage_seconds_total-sum(rate)"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ef5nh1gqsibr4c"
+          },
+          "editorMode": "builder",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{name=\"datastore_multithreaded\"}[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "multi thread",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Single threaded Epoll CPU Usage",
+      "title": "CPU Usages",
       "type": "timeseries"
     },
     {
@@ -190,7 +203,7 @@
         "x": 12,
         "y": 0
       },
-      "id": 2,
+      "id": 7,
       "options": {
         "legend": {
           "calcs": [],
@@ -204,25 +217,38 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
-          "adhocFilters": [],
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ef5nh1gqsibr4c"
+          },
+          "editorMode": "code",
+          "expr": "avg(container_memory_usage_bytes{name=\"datastore_single_threaded_epoll\"})",
+          "fromExploreMetrics": true,
+          "instant": true,
+          "interval": "",
+          "legendFormat": "epoll",
+          "range": true,
+          "refId": "C"
+        },
+        {
           "datasource": {
             "type": "prometheus",
             "uid": "ef5nh1gqsibr4c"
           },
           "editorMode": "builder",
-          "expr": "sum(rate(container_network_receive_packets_total{name=\"datastore_single_threaded_epoll\"}[$__rate_interval]))",
-          "fromExploreMetrics": true,
-          "instant": true,
+          "expr": "avg(container_memory_usage_bytes{name=\"datastore_multithreaded\"})",
+          "hide": false,
+          "instant": false,
           "interval": "",
-          "legendFormat": "sum(rate)",
+          "legendFormat": "multi thread",
           "range": true,
-          "refId": "container_network_receive_packets_total-sum(rate)"
+          "refId": "A"
         }
       ],
-      "title": "Single Threaded Epoll Network Usage",
+      "title": "Memory Usages",
       "type": "timeseries"
     },
     {
@@ -292,7 +318,7 @@
         "x": 0,
         "y": 8
       },
-      "id": 3,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -306,25 +332,36 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
-          "adhocFilters": [],
           "datasource": {
             "type": "prometheus",
             "uid": "ef5nh1gqsibr4c"
           },
           "editorMode": "builder",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=\"datastore_multithreaded\"}[$__rate_interval]))",
+          "expr": "sum(rate(container_network_receive_bytes_total{name=\"datastore_single_threaded_epoll\"}[$__rate_interval]))",
           "fromExploreMetrics": true,
-          "instant": true,
           "interval": "",
-          "legendFormat": "sum(rate)",
+          "legendFormat": "epoll",
           "range": true,
-          "refId": "container_cpu_usage_seconds_total-sum(rate)"
+          "refId": "container_network_receive_bytes_total-sum(rate)"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "ef5nh1gqsibr4c"
+          },
+          "editorMode": "builder",
+          "expr": "sum(rate(container_network_receive_bytes_total{name=\"datastore_multithreaded\"}[$__rate_interval]))",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "multi threaded",
+          "range": true,
+          "refId": "A"
         }
       ],
-      "title": "Multi Threaded CPU Usage",
+      "title": "Received Network Bytes",
       "type": "timeseries"
     },
     {
@@ -394,7 +431,7 @@
         "x": 12,
         "y": 8
       },
-      "id": 4,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": [],
@@ -408,229 +445,37 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "12.2.0",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
-          "adhocFilters": [],
           "datasource": {
             "type": "prometheus",
             "uid": "ef5nh1gqsibr4c"
           },
           "editorMode": "builder",
-          "expr": "sum(rate(container_network_receive_packets_total{name=\"datastore_multithreaded\"}[$__rate_interval]))",
+          "expr": "sum(rate(container_network_receive_packets_dropped_total{name=\"datastore_single_threaded_epoll\"}[$__rate_interval]))",
           "fromExploreMetrics": true,
           "instant": true,
           "interval": "",
-          "legendFormat": "sum(rate)",
+          "legendFormat": "epoll",
           "range": true,
-          "refId": "container_network_receive_packets_total-sum(rate)"
-        }
-      ],
-      "title": "Multi Threaded Network Usage",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "ef5nh1gqsibr4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
+          "refId": "container_network_receive_packets_dropped_total-sum(rate)"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 16
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.2.0",
-      "targets": [
         {
-          "adhocFilters": [],
           "datasource": {
             "type": "prometheus",
             "uid": "ef5nh1gqsibr4c"
           },
           "editorMode": "builder",
-          "expr": "sum(rate(container_cpu_usage_seconds_total{name=\"datastore_single_threaded\"}[$__rate_interval]))",
-          "fromExploreMetrics": true,
+          "expr": "sum(rate(container_network_receive_packets_dropped_total{name=\"datastore_multithreaded\"}[$__rate_interval]))",
           "instant": true,
-          "interval": "",
-          "legendFormat": "sum(rate)",
+          "key": "Q-a3a02c72-e257-4e75-b94b-59aa3bbcd08e-1",
+          "legendFormat": "multi threaded",
           "range": true,
-          "refId": "container_cpu_usage_seconds_total-sum(rate)"
+          "refId": "A"
         }
       ],
-      "title": "Single Threaded CPU Usage",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "ef5nh1gqsibr4c"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 16
-      },
-      "id": 6,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.2.0",
-      "targets": [
-        {
-          "adhocFilters": [],
-          "datasource": {
-            "type": "prometheus",
-            "uid": "ef5nh1gqsibr4c"
-          },
-          "editorMode": "builder",
-          "expr": "sum(rate(container_network_receive_packets_total{name=\"datastore_single_threaded\"}[$__rate_interval]))",
-          "fromExploreMetrics": true,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "sum(rate)",
-          "range": true,
-          "refId": "container_network_receive_packets_total-sum(rate)"
-        }
-      ],
-      "title": "Single Threaded Network Usage",
+      "title": "Dropped Network Bytes",
       "type": "timeseries"
     }
   ],
@@ -641,12 +486,12 @@
     "list": []
   },
   "time": {
-    "from": "2025-11-30T05:49:22.615Z",
-    "to": "2025-11-30T06:49:22.615Z"
+    "from": "now-5m",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "CPU Usage",
   "uid": "adx95dc",
-  "version": 14
+  "version": 4
 }

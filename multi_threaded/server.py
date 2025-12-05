@@ -1,11 +1,13 @@
 import socket
 import threading
+import time
 
 # Global in-memory store + lock
 store = {}
 store_lock = threading.RLock()
 
 def process_command(payload):
+    time.sleep(10)
     print(f"payload: {payload}")
 
     commands = payload.strip().split()
@@ -61,23 +63,25 @@ def handle_client(conn, addr):
         
             data = conn.recv(1024)
             if not data:
-                break
+                return
+            
+            time.sleep(10)
 
-            buffer += data.decode()
+            # buffer += data.decode()
 
-            while "\n" in buffer:
-                line, buffer = buffer.split("\n", 1)
-                line = line.strip()
-                if not line:
-                    continue
+            # while "\n" in buffer:
+            #     line, buffer = buffer.split("\n", 1)
+            #     line = line.strip()
+            #     if not line:
+            #         continue
 
-                print(f"[{addr}] Received: {line}")
-                response = process_command(line)
-                response_msg = f"{response}\n"
-                try:
-                    conn.sendall(response_msg.encode())
-                except:
-                    print("faced error on response writing in the connection")
+            #     print(f"[{addr}] Received: {line}")
+            #     response = process_command(line)
+            #     response_msg = f"{response}\n"
+            #     try:
+            #         conn.sendall(response_msg.encode())
+            #     except:
+            #         print("faced error on response writing in the connection")
 
 
 

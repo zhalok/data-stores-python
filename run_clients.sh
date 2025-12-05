@@ -4,15 +4,35 @@
 # Usage: ./run_clients.sh [workers] [connections] [commands] [queue-size] [sleep]
 
 # Default values
-WORKERS=${1:-10}
-CONNECTIONS=${2:-10}
-COMMANDS=${3:-100000}
-QUEUE_SIZE=${4:-10}
+WORKERS=${1:-1000}
+CONNECTIONS=${2:-100000}
+COMMANDS=${3:-10000}
+QUEUE_SIZE=${4:-100}
 SLEEP=${5:-15}
 
 # Log directory
 LOG_DIR="./logs"
 mkdir -p "$LOG_DIR"
+
+# Array to store PIDs
+declare -a PIDS
+
+# Cleanup function to kill all clients
+cleanup() {
+  echo ""
+  echo "Received exit signal. Stopping all clients..."
+  for pid in "${PIDS[@]}"; do
+    if kill -0 "$pid" 2>/dev/null; then
+      echo "Stopping process $pid..."
+      kill "$pid"
+    fi
+  done
+  echo "All clients stopped."
+  exit 0
+}
+
+# Register signal handlers
+trap cleanup SIGINT SIGTERM
 
 echo "Starting clients with configuration:"
 echo "  Workers: $WORKERS"
@@ -23,19 +43,20 @@ echo "  Sleep duration: $SLEEP seconds"
 echo ""
 
 # Run single_threaded client (port 8000)
-echo "Starting single_threaded client..."
-cd single_threaded
-nohup go run client.go \
-  --workers="$WORKERS" \
-  --connections="$CONNECTIONS" \
-  --commands="$COMMANDS" \
-  --queue-size="$QUEUE_SIZE" \
-  --sleep="$SLEEP" \
-  --addr="localhost:8000" \
-  > "../$LOG_DIR/single_threaded_client.log" 2>&1 &
-SINGLE_THREADED_PID=$!
-echo "Single threaded client started (PID: $SINGLE_THREADED_PID)"
-cd ..
+# echo "Starting single_threaded client..."
+# cd single_threaded
+# nohup go run client.go \
+#   --workers="$WORKERS" \
+#   --connections="$CONNECTIONS" \
+#   --commands="$COMMANDS" \
+#   --queue-size="$QUEUE_SIZE" \
+#   --sleep="$SLEEP" \
+#   --addr="localhost:8000" \
+#   > "../$LOG_DIR/single_threaded_client.log" 2>&1 &
+# SINGLE_THREADED_PID=$!
+# PIDS+=($SINGLE_THREADED_PID)
+# echo "Single threaded client started (PID: $SINGLE_THREADED_PID)"
+# cd ..
 
 # Run multi_threaded client (port 8001)
 echo "Starting multi_threaded client..."
@@ -49,6 +70,7 @@ nohup go run client.go \
   --addr="localhost:8001" \
   > "../$LOG_DIR/multi_threaded_client.log" 2>&1 &
 MULTI_THREADED_PID=$!
+PIDS+=($MULTI_THREADED_PID)
 echo "Multi threaded client started (PID: $MULTI_THREADED_PID)"
 cd ..
 
@@ -64,6 +86,7 @@ nohup go run client.go \
   --addr="localhost:8003" \
   > "../$LOG_DIR/single_threaded_epoll_client.log" 2>&1 &
 EPOLL_PID=$!
+PIDS+=($EPOLL_PID)
 echo "Single threaded epoll client started (PID: $EPOLL_PID)"
 cd ..
 
@@ -80,10 +103,15 @@ echo "  $LOG_DIR/single_threaded_client.log"
 echo "  $LOG_DIR/multi_threaded_client.log"
 echo "  $LOG_DIR/single_threaded_epoll_client.log"
 echo ""
-echo "To stop all clients, run:"
-echo "  kill $SINGLE_THREADED_PID $MULTI_THREADED_PID $EPOLL_PID"
+echo "Press Ctrl+C to stop all clients"
 echo ""
 echo "To monitor logs:"
 echo "  tail -f $LOG_DIR/single_threaded_client.log"
 echo "  tail -f $LOG_DIR/multi_threaded_client.log"
 echo "  tail -f $LOG_DIR/single_threaded_epoll_client.log"
+echo ""
+
+# Wait indefinitely until interrupted
+while true; do
+  sleep 1
+done
