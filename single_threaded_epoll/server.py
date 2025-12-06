@@ -33,6 +33,54 @@ def process_command(payload):
     else:
         return "unknown command"
 
+def handle_connection(conn, buffers, fd):
+    data = conn.recv(1024)
+    buffers[fd] += data.decode()
+    while "\n" in buffers[fd]:
+        line, buffers[fd] = buffers[fd].split("\n", 1)
+        line = line.strip()
+        if not line:
+            continue
+        print(f"[{conn}] Received: {line}")
+        response = process_command(line)
+        try:
+            conn.sendall((response + "\n").encode())
+            print(f"Response sent to {conn}")
+        except:
+            print("error sending response")
+    
+def handle_event(fd, event, server, epoll, clients, buffers, addresses):
+    if fd == server.fileno():
+        conn, addr = server.accept()
+        epoll.register(conn.fileno(), select.EPOLLIN | select.EPOLLRDHUP | select.EPOLLHUP)
+        clients[conn.fileno()] = conn
+        buffers[conn.fileno()] = ""
+        addresses[conn.fileno()] = addr
+        print(f"Accepted connection from {addr}")
+    elif event == select.EPOLLRDHUP or event == select.EPOLLHUP:
+        epoll.unregister(fd)
+        addr = addresses[fd]
+        del clients[fd]
+        del buffers[fd]
+        print(f"closing connection from address {addr}")
+    elif event == select.EPOLLIN:
+        conn = clients[fd]
+        data = conn.recv(1024)
+        buffers[fd] += data.decode()
+        while "\n" in buffers[fd]:
+            line, buffers[fd] = buffers[fd].split("\n", 1)
+            line = line.strip()
+            if not line:
+                continue
+            print(f"[{conn}] Received: {line}")
+            response = process_command(line)
+            try:
+                conn.sendall((response + "\n").encode())
+                print(f"Response sent to {conn}")
+            except:
+                print("error sending response")
+
+
 def main():
     host = '0.0.0.0'
     port = 3000
@@ -53,35 +101,8 @@ def main():
         while True:
             events = epoll.poll(-1)
             for fd, event in events:
-                if fd == server.fileno():
-                    conn, addr = server.accept()
-                    epoll.register(conn.fileno(), select.EPOLLIN | select.EPOLLRDHUP | select.EPOLLHUP)
-                    clients[conn.fileno()] = conn
-                    buffers[conn.fileno()] = ""
-                    addresses[conn.fileno()] = addr
-                    print(f"Accepted connection from {addr}")
-                elif event == select.EPOLLRDHUP or event == select.EPOLLHUP:
-                    epoll.unregister(fd)
-                    addr = addresses[fd]
-                    del clients[fd]
-                    del buffers[fd]
-                    print(f"closing connection from address {addr}")
-                elif event == select.EPOLLIN:
-                    conn = clients[fd]
-                    data = conn.recv(1024)
-                    buffers[fd] += data.decode()
-                    while "\n" in buffers[fd]:
-                        line, buffers[fd] = buffers[fd].split("\n", 1)
-                        line = line.strip()
-                        if not line:
-                            continue
-                        print(f"[{conn}] Received: {line}")
-                        response = process_command(line)
-                        try:
-                            conn.sendall((response + "\n").encode())
-                            print(f"Response sent to {conn}")
-                        except:
-                            print("error sending response")
+                handle_event(fd=fd,event=event,server=server,epoll=epoll,clients=clients,buffers=buffers,addresses=addresses)
+
 
     except KeyboardInterrupt:
         print("\n[!] Server shutting down")

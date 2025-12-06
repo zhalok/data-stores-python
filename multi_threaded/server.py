@@ -61,8 +61,8 @@ def handle_client(conn, addr):
         
             data = conn.recv(1024)
             if not data:
-                break
-
+                return
+            
             buffer += data.decode()
 
             while "\n" in buffer:
@@ -101,7 +101,6 @@ def main():
         while True:
 
             conn, addr = server.accept()
-            # conn.setblocking(False)
             conn.sendall("connection recieved!!!\n".encode())
             thread = threading.Thread(target=handle_client, args=(conn, addr))
             thread.start()
