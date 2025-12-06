@@ -4,9 +4,9 @@
 # Usage: ./run_clients.sh [workers] [connections] [commands] [queue-size] [sleep]
 
 # Default values
-WORKERS=${1:-1000}
-CONNECTIONS=${2:-100000}
-COMMANDS=${3:-10000}
+WORKERS=${1:-10000}
+CONNECTIONS=${2:-1000}
+COMMANDS=${3:-1000}
 QUEUE_SIZE=${4:-100}
 SLEEP=${5:-15}
 
